@@ -1,0 +1,67 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# The fuzzer itself is nondeterministic; this workflow is not. It runs the
+# deterministic parts (types, lint, unit tests, licence policy) plus one fixed
+# seed against the in-repo target, so a regression in the harness fails the PR
+# that caused it.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: check + unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Vite+
+        run: curl -fsSL https://viteplus.dev/install.sh | bash
+
+      - name: Install dependencies
+        run: vp install --frozen-lockfile
+
+      # Format, lint and type-check in one pass. TypeScript 7 (`tsgo`) does the
+      # type checking; no build step exists because every runtime file is
+      # executed directly by Node 26 type stripping.
+      - name: Check
+        run: vp check
+
+      - name: Unit tests
+        run: vp test
+
+      - name: Licence policy
+        run: vp run targets:licenses
+
+  smoke:
+    name: fuzz the in-repo target (fixed seed)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Vite+
+        run: curl -fsSL https://viteplus.dev/install.sh | bash
+
+      - name: Install dependencies
+        run: vp install --frozen-lockfile
+
+      - name: Install Chromium
+        run: vp run browsers:install
+
+      # `interop-zoo` needs no submodule, no network and no backend, so this is
+      # the one fuzz run that is always reproducible. A fixed seed makes a new
+      # finding here a real signal rather than luck.
+      - name: Fuzz
+        run: vp run fuzz -- --target interop-zoo --seed 20260916 --cases 8
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fuzz-report-smoke
+          path: reports/
+          retention-days: 14

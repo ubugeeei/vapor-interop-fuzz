@@ -1,0 +1,70 @@
+packages:
+  - packages/*
+  - fixtures/*
+
+# Every third-party version lives here. Packages reference them as `catalog:<name>`
+# so that the Vue / Vite / toolchain versions can never drift between workspace
+# packages -- which matters a lot when the thing under test *is* the compiler.
+catalogs:
+  vite-plus:
+    'vite': 'npm:@voidzero-dev/vite-plus-core@0.3.2'
+    'vite-plus': '0.3.2'
+
+  vue:
+    # Vapor Mode ships in the 3.6 line. `vapor` SFC attribute, `createVaporApp`
+    # and `vaporInteropPlugin` are all 3.6+ APIs.
+    'vue': '3.6.0-rc.8'
+    '@vue/compiler-sfc': '3.6.0-rc.8'
+    '@vitejs/plugin-vue': '6.0.9'
+    '@vitejs/plugin-vue-jsx': '5.1.6'
+    'vue-jsx-vapor': '3.2.24'
+
+  browser:
+    'playwright': '1.63.0'
+
+  tooling:
+    # TypeScript 7 (the native port) is the project's type checker.
+    'typescript': '7.0.2'
+    # …and a classic TypeScript purely as a *library* for @vue/compiler-sfc.
+    # The 7.x npm package exposes no `sys`/`createSourceFile` at runtime, so
+    # compiler-sfc cannot use it to resolve `defineProps<T>()` across files. The
+    # harness feeds this one in through `registerTS()`. Nothing type-checks with
+    # it. See packages/runner/src/compiler-ts.ts.
+    'typescript-classic': 'npm:typescript@5.9.3'
+    '@types/node': '22.20.3'
+
+  targets:
+    # Runtime dependencies that specimens of the submodule targets import.
+    #
+    # They are declared in the *workspace root* package.json on purpose: pnpm
+    # puts root dependencies in `<root>/node_modules`, which is the only
+    # directory a file under `targets/<repo>/…` can reach by walking up. That
+    # lets a specimen `import 'reka-ui'` resolve without installing each
+    # submodule's own (very large) dependency graph.
+    '@iconify/vue': '5.0.1'
+    '@vueuse/core': '14.4.0'
+    '@vueuse/shared': '14.4.0'
+    '@floating-ui/vue': '^1.1.6'
+    '@floating-ui/dom': '^1.6.13'
+    '@internationalized/date': '^3.5.0'
+    '@internationalized/number': '^3.5.0'
+    '@tanstack/vue-virtual': '^3.12.0'
+    'aria-hidden': '^1.2.4'
+    'defu': '^6.1.5'
+    'ohash': '^2.0.11'
+    'vuetify': '3.13.4'
+    '@radix-ui/colors': '3.0.0'
+    'vue-sonner': '2.0.9'
+    # tsconfig presets that target repositories `extend`. Vite resolves a
+    # tsconfig per source file, walking up from the file itself, so a target's
+    # own tsconfig has to be loadable even though we never install that
+    # target's dependencies.
+    '@vue/tsconfig': '0.9.1'
+    '@tsconfig/node24': '24.0.5'
+
+dedupePeers: true
+
+ignoreWorkspaceRootCheck: true
+
+minimumReleaseAgeExclude:
+  - '@types/node@22.20.3'

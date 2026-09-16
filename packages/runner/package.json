@@ -1,0 +1,22 @@
+{
+  "name": "@vapor-fuzz/runner",
+  "version": "0.0.0",
+  "private": true,
+  "bin": {
+    "vapor-fuzz": "./src/bin/vapor-fuzz.ts"
+  },
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@vapor-fuzz/core": "workspace:*",
+    "@vapor-fuzz/targets": "workspace:*",
+    "@vitejs/plugin-vue": "catalog:vue",
+    "@vue/compiler-sfc": "catalog:vue",
+    "playwright": "catalog:browser",
+    "typescript-classic": "catalog:tooling",
+    "vite": "catalog:vite-plus",
+    "vue": "catalog:vue"
+  }
+}

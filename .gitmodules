@@ -1,0 +1,35 @@
+[submodule "targets/reka-ui"]
+	path = targets/reka-ui
+	url = https://github.com/unovue/reka-ui.git
+	branch = v2
+	shallow = true
+[submodule "targets/nuxt-ui"]
+	path = targets/nuxt-ui
+	url = https://github.com/nuxt/ui.git
+	branch = v4
+	shallow = true
+[submodule "targets/vuetify"]
+	path = targets/vuetify
+	url = https://github.com/vuetifyjs/vuetify.git
+	branch = master
+	shallow = true
+[submodule "targets/npmx"]
+	path = targets/npmx
+	url = https://github.com/npmx-dev/npmx.dev.git
+	branch = main
+	shallow = true
+[submodule "targets/elk"]
+	path = targets/elk
+	url = https://github.com/elk-zone/elk.git
+	branch = main
+	shallow = true
+[submodule "targets/misskey"]
+	path = targets/misskey
+	url = https://github.com/misskey-dev/misskey.git
+	branch = develop
+	shallow = true
+[submodule "targets/directus"]
+	path = targets/directus
+	url = https://github.com/directus/directus.git
+	branch = main
+	shallow = true

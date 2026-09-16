@@ -1,0 +1,99 @@
+name: fuzz-nightly
+
+on:
+  schedule:
+    # 03:00 UTC. A fresh seed every night is the point: the corpus is huge and
+    # a single run only ever samples a slice of it.
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      targets:
+        description: 'Space-separated target ids (default: every target enabled by default)'
+        required: false
+        type: string
+      seed:
+        description: 'Seed to replay a previous campaign exactly'
+        required: false
+        type: string
+      cases:
+        description: 'Cases per specimen'
+        required: false
+        default: '20'
+        type: string
+
+jobs:
+  fuzz:
+    name: ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        # One job per target: a crash or a hang in one must not cost the others
+        # their results, and the per-target reports stay separately downloadable.
+        target: [interop-zoo, reka-ui, vuetify]
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Install Vite+
+        run: curl -fsSL https://viteplus.dev/install.sh | bash
+
+      - name: Install dependencies
+        run: vp install --frozen-lockfile
+
+      - name: Install Chromium
+        run: vp run browsers:install
+
+      - name: Fuzz ${{ matrix.target }}
+        id: fuzz
+        continue-on-error: true
+        run: |
+          vp run fuzz -- \
+            --target ${{ matrix.target }} \
+            --cases ${{ inputs.cases || '20' }} \
+            --specimens 12 \
+            ${{ inputs.seed && format('--seed {0}', inputs.seed) || '' }}
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fuzz-report-${{ matrix.target }}
+          path: reports/
+          retention-days: 30
+
+      - name: Summarise
+        if: always()
+        run: cat reports/latest.md >> "$GITHUB_STEP_SUMMARY"
+
+  report:
+    name: open an issue for new findings
+    needs: fuzz
+    if: always() && github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Collect new findings
+        id: collect
+        run: |
+          node --experimental-strip-types \
+            packages/runner/src/bin/collect-reports.ts artifacts > summary.md
+          if [ -s summary.md ]; then echo "found=true" >> "$GITHUB_OUTPUT"; fi
+
+      - name: File an issue
+        if: steps.collect.outputs.found == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --title "Vapor interop fuzz: new findings $(date -u +%Y-%m-%d)" \
+            --body-file summary.md \
+            --label fuzz

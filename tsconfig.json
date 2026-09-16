@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    // TypeScript 7 (native). `tsgo` is type-check only here: every runtime file
+    // is executed directly by Node 26 type stripping, so nothing is ever emitted.
+    "target": "esnext",
+    "lib": ["esnext", "dom", "dom.iterable"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "moduleDetection": "force",
+    "types": ["node"],
+
+    // --- Node 26 type-stripping contract -------------------------------------
+    // Node erases types without a transform step, so the source must contain no
+    // syntax that needs one (no enums, no parameter properties, no namespaces),
+    // and relative imports must carry the real `.ts` extension.
+    "erasableSyntaxOnly": true,
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noEmit": true,
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "exactOptionalPropertyTypes": false,
+    "skipLibCheck": true,
+    "resolveJsonModule": true
+  },
+  "include": ["packages/**/*.ts", "fixtures/**/*.ts", "vite.config.ts"],
+  "exclude": [
+    "**/node_modules",
+    "**/dist",
+    "targets",
+    ".fuzz",
+    // Target glue: these import code that only exists once the matching
+    // submodule has been installed. See packages/targets/src/setups/README.md.
+    "packages/targets/src/setups"
+  ]
+}

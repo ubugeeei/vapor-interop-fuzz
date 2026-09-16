@@ -1,0 +1,10 @@
+{
+  "name": "@vapor-fuzz/fixture-interop-zoo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "In-repo fuzz target: a small Vue app that deliberately concentrates every interop-sensitive feature into a handful of mountable specimens.",
+  "type": "module",
+  "dependencies": {
+    "vue": "catalog:vue"
+  }
+}
