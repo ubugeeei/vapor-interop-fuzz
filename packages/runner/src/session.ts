@@ -2,7 +2,13 @@ import fs from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import vue from '@vitejs/plugin-vue'
-import { createLogger, createServer, type InlineConfig, type Plugin, type ViteDevServer } from 'vite'
+import {
+  createLogger,
+  createServer,
+  type InlineConfig,
+  type Plugin,
+  type ViteDevServer,
+} from 'vite'
 import { captureDom, collectActions, type CapturedDom, type PageAction } from '@vapor-fuzz/core'
 import type { CaseObservation, DomSnapshot, FuzzPlan } from '@vapor-fuzz/core'
 import { chromium, type Browser, type BrowserContext, type Page } from 'playwright'

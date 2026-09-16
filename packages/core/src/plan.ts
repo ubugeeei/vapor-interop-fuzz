@@ -110,7 +110,12 @@ export function generatePlan(input: PlanInput): FuzzPlan {
     eligible.length > 0 &&
     eligible.every((c) => c.id === input.rootId)
 
-  const shape = input.shape ?? drawShape(rng, everythingEligible, rootIsOnlyFlippable)
+  // A Vapor app needs a Vapor root, so if the root cannot be flipped at all
+  // (an Options API specimen, say) the Vapor-root shapes are unreachable.
+  const rootCanBeVapor = input.rootId === undefined || eligible.some((c) => c.id === input.rootId)
+
+  const shape =
+    input.shape ?? drawShape(rng, everythingEligible, rootIsOnlyFlippable, rootCanBeVapor)
   const { appMode, strategy } = resolveShape(shape, rng)
 
   const finalAppMode = input.appMode ?? appMode
@@ -136,16 +141,25 @@ export function generatePlan(input: PlanInput): FuzzPlan {
   }
 }
 
-function drawShape(rng: Rng, everythingEligible: boolean, rootIsOnlyFlippable: boolean): CaseShape {
+function drawShape(
+  rng: Rng,
+  everythingEligible: boolean,
+  rootIsOnlyFlippable: boolean,
+  rootCanBeVapor: boolean,
+): CaseShape {
   const pool: CaseShape[] = []
   for (const shape of CASE_SHAPES) {
     // `pure-vapor` has no bridge, so a single non-convertible component would
     // make the case fail for a reason that has nothing to do with interop.
     if (shape === 'pure-vapor' && !everythingEligible) continue
+    // A virtual-DOM root with nothing else flippable leaves nothing to flip.
     if (shape === 'vdom-root-mixed' && rootIsOnlyFlippable) continue
+    // `createVaporApp` mounts its root through vapor's `createComponent`, so a
+    // root that cannot compile in Vapor Mode makes both Vapor shapes invalid.
+    if (!rootCanBeVapor && (shape === 'pure-vapor' || shape === 'vapor-root-mixed')) continue
     for (let i = 0; i < SHAPE_WEIGHTS[shape]; i++) pool.push(shape)
   }
-  return rng.pick(pool)
+  return pool.length > 0 ? rng.pick(pool) : 'pure-vdom'
 }
 
 function resolveShape(

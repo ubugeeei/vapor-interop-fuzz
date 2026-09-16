@@ -153,7 +153,9 @@ Confirmed, shrunk findings from short exploratory runs:
     `Label.vue` alone.
   - `$el` is `undefined` on a Vapor instance reached through a template ref, so
     `usePrimitiveElement`'s `primitiveElement.value?.$el.nodeName` throws.
-  - `instance.exposed` is missing where the virtual DOM would have populated it.
+  - Reaching `$el` through `useForwardExpose`'s own getter throws
+    `Cannot read properties of undefined (reading 'el')` — the instance exists,
+    but the subtree handle behind `$el` does not.
 - **A prop passed across the bridge arrives as slot content.** A Vapor
   specimen rendering Vuetify's `<v-icon icon="mdi-home-outline">` produces
   `<i class="notranslate v-icon">mdi-home-outline</i>` instead of

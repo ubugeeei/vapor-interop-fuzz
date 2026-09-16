@@ -69,6 +69,18 @@ describe('generatePlan', () => {
     }
   })
 
+  it('never draws a Vapor-root shape when the root cannot be Vapor', () => {
+    // `createVaporApp` mounts its root through vapor's `createComponent`, so a
+    // root that cannot compile in Vapor Mode would crash for a reason that has
+    // nothing to do with interop.
+    const withVdomRoot = [candidate(ROOT, 0, false), ...candidates.slice(1)]
+    for (let seed = 1; seed < 200; seed++) {
+      const plan = generatePlan({ ...base, candidates: withVdomRoot, seed })
+      expect(plan.appMode).not.toBe('vapor-only')
+      expect(plan.appMode).not.toBe('vapor-interop')
+    }
+  })
+
   it('produces sorted, duplicate-free file lists', () => {
     for (let seed = 1; seed < 60; seed++) {
       const { vaporFiles } = generatePlan({ ...base, seed })
