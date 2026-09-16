@@ -506,8 +506,6 @@ export interface RunOutcome {
  */
 function quietLogger(): InlineConfig['customLogger'] {
   const logger = createLogger('error', { allowClearScreen: false })
-  const isClientRelay = (message: string) =>
-    message.includes('(client)') || message.includes('[Unhandled rejection]')
 
   return {
     ...logger,
@@ -519,6 +517,9 @@ function quietLogger(): InlineConfig['customLogger'] {
     },
   }
 }
+
+const isClientRelay = (message: string): boolean =>
+  message.includes('(client)') || message.includes('[Unhandled rejection]')
 
 async function loadExtraPlugins(
   plan: SpecimenTargetPlan,
