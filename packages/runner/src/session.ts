@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import vue from '@vitejs/plugin-vue'
-import { createServer, type InlineConfig, type Plugin, type ViteDevServer } from 'vite'
+import { createLogger, createServer, type InlineConfig, type Plugin, type ViteDevServer } from 'vite'
 import { captureDom, collectActions, type CapturedDom, type PageAction } from '@vapor-fuzz/core'
 import type { CaseObservation, DomSnapshot, FuzzPlan } from '@vapor-fuzz/core'
 import { chromium, type Browser, type BrowserContext, type Page } from 'playwright'
@@ -192,6 +192,7 @@ export class SpecimenSession {
       configFile: false,
       tsconfig: tsconfigPath,
       logLevel: 'error',
+      customLogger: quietLogger(),
       appType: 'spa',
       clearScreen: false,
       plugins: [
@@ -486,6 +487,31 @@ export class SpecimenSession {
 export interface RunOutcome {
   readonly observation: CaseObservation
   readonly actions: readonly PageAction[]
+}
+
+/**
+ * Silence the dev server's relay of browser-side errors.
+ *
+ * Vite forwards unhandled rejections from the page to the terminal with a
+ * source excerpt and a stack. Here that is pure noise: the harness already
+ * captures every error through Playwright and Vue's own `errorHandler`, and a
+ * campaign deliberately provokes hundreds of them. Server-side failures (a
+ * transform error, a port clash) still print.
+ */
+function quietLogger(): InlineConfig['customLogger'] {
+  const logger = createLogger('error', { allowClearScreen: false })
+  const isClientRelay = (message: string) =>
+    message.includes('(client)') || message.includes('[Unhandled rejection]')
+
+  return {
+    ...logger,
+    error(message, options) {
+      if (!isClientRelay(message)) logger.error(message, options)
+    },
+    warn(message, options) {
+      if (!isClientRelay(message)) logger.warn(message, options)
+    },
+  }
 }
 
 async function loadExtraPlugins(

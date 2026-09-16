@@ -144,11 +144,16 @@ coverage the run did not have.
 
 Confirmed, shrunk findings from short exploratory runs:
 
-- **`getCurrentInstance()` is null inside a Vapor component's `setup`.**
-  Reka UI's `useForwardExpose` does `Object.assign({}, instance.exposed)` and
-  throws `Cannot read properties of null (reading 'exposed')`. Any library
-  helper built on the instance handle breaks on conversion. Minimal
-  reproducer: one component (`Label.vue`).
+- **The component instance handle is not the same thing in Vapor**, which
+  breaks the helpers component libraries build on it. Three symptoms, all from
+  Reka UI, all shrunk to one or a few components:
+  - `getCurrentInstance()` returns `null` inside a Vapor `setup`, so
+    `useForwardExpose`'s `Object.assign({}, instance.exposed)` throws
+    `Cannot read properties of null (reading 'exposed')` — minimal reproducer:
+    `Label.vue` alone.
+  - `$el` is `undefined` on a Vapor instance reached through a template ref, so
+    `usePrimitiveElement`'s `primitiveElement.value?.$el.nodeName` throws.
+  - `instance.exposed` is missing where the virtual DOM would have populated it.
 - **A prop passed across the bridge arrives as slot content.** A Vapor
   specimen rendering Vuetify's `<v-icon icon="mdi-home-outline">` produces
   `<i class="notranslate v-icon">mdi-home-outline</i>` instead of
