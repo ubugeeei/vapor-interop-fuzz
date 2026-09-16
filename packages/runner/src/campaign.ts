@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs'
+import path from 'node:path'
 import {
   baselinePlan,
   compareObservations,
@@ -6,26 +8,24 @@ import {
   generatePlan,
   maskAttributes,
   shrinkPlan,
+  type Candidate,
   type CaseObservation,
   type CaseResult,
-  type Candidate,
   type Finding,
   type FuzzPlan,
   type PageAction,
 } from '@vapor-fuzz/core'
-import { existsSync } from 'node:fs'
-import path from 'node:path'
 import { getTarget, type TargetDefinition } from '@vapor-fuzz/targets'
+import { AppSession } from './app-session.ts'
 import {
   analyze,
   candidatesFromGraph,
   planSpecimenTarget,
   type SpecimenTargetPlan,
 } from './discover.ts'
-import { AppSession } from './app-session.ts'
-import { SpecimenSession, type RunOutcome } from './session.ts'
 import { globFiles } from './glob.ts'
 import { fromId, toId, WORKSPACE_ROOT } from './paths.ts'
+import { SpecimenSession, type RunOutcome } from './session.ts'
 
 export interface CampaignOptions {
   readonly targetIds: readonly string[]

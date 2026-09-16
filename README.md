@@ -212,8 +212,8 @@ Useful flags: `--target <id>` (repeatable), `--cases <n>`, `--specimens <n>`,
 `--seed <n>`, `--no-shrink`, `--headed`, `--verbose`, `--actions <n>`.
 
 Every run prints its seed, and a seed plus a target reproduces a campaign
-exactly. Reports land in `reports/` as JSON and Markdown, with `latest.*`
-symlinking the most recent.
+exactly. Reports land in `reports/` as JSON and Markdown; `latest.json` and
+`latest.md` are rewritten each run so CI and editors have a stable path.
 
 To confirm a finding by hand:
 

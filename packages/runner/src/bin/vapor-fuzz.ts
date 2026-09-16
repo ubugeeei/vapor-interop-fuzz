@@ -37,7 +37,9 @@ Options
  * `parseArgs` treats that as "stop parsing options", which would silently turn
  * every documented flag into a positional. Drop the separator first.
  */
-const argv = process.argv.slice(2).filter((arg, index, all) => arg !== '--' || all.indexOf('--') !== index)
+const argv = process.argv
+  .slice(2)
+  .filter((arg, index, all) => arg !== '--' || all.indexOf('--') !== index)
 
 const { values, positionals } = parseArgs({
   args: argv,

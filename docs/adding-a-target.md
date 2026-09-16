@@ -55,7 +55,7 @@ the Vite server, which is where all the interesting control lives.
 
 Things worth getting right:
 
-- **`treeFullyMutable`** is `true` only when *every* component a specimen
+- **`treeFullyMutable`** is `true` only when _every_ component a specimen
   renders is reachable by the mutator — i.e. the library source is aliased in
   rather than resolved from a prebuilt package. It gates the `pure-vapor`
   shape, which runs with no interop bridge at all and so cannot tolerate a
@@ -63,10 +63,10 @@ Things worth getting right:
 - **Alias order matters.** Vite matches aliases in declaration order and a
   string `find` also matches the `<find>/…` prefix, so subpath entries
   (`my-lib/date`) must come before the bare one. A unit test enforces this.
-- **`rewriteAlias`** is for the library's *internal* alias (`@/`). A Vite alias
+- **`rewriteAlias`** is for the library's _internal_ alias (`@/`). A Vite alias
   satisfies the bundler but not `@vue/compiler-sfc`, which resolves
   `defineProps<T>()` across files by reading the nearest `tsconfig.json`.
-  Repositories that keep their real `paths` in a *referenced* tsconfig fail with
+  Repositories that keep their real `paths` in a _referenced_ tsconfig fail with
   "Failed to resolve extends base type" unless the specifier is rewritten in the
   source.
 - **`setupModule`** installs whatever the components need on the app —
@@ -122,14 +122,14 @@ application-level axis.
 
 Read the reason. The harness distinguishes several cases:
 
-| message | what to do |
-| --- | --- |
-| `quarantined volatile attribute(s): …` | Nothing — it recovered on its own, and named the blind spot |
-| `replaying N of M recorded interactions` | Nothing — it kept the stable prefix |
+| message                                                 | what to do                                                                            |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `quarantined volatile attribute(s): …`                  | Nothing — it recovered on its own, and named the blind spot                           |
+| `replaying N of M recorded interactions`                | Nothing — it kept the stable prefix                                                   |
 | `the initial render differs between two identical runs` | The specimen depends on the clock, the network or randomness. Usually correct to drop |
-| `control case diverged from the baseline` | Intermittent nondeterminism that survived the double-render check |
+| `control case diverged from the baseline`               | Intermittent nondeterminism that survived the double-render check                     |
 
 A specimen that renders the current month, fetches from a live API, or seeds
 from `Math.random()` is genuinely uncomparable, and dropping it is the right
-answer. If a *lot* of a target's specimens drop, the target probably wants a
+answer. If a _lot_ of a target's specimens drop, the target probably wants a
 narrower `specimens` glob rather than a looser comparison.

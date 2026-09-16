@@ -9,18 +9,20 @@ import type { Plugin } from 'vite'
  * to toggle. The equivalent knob is *which compiler sees the file*:
  * `vue-jsx-vapor` emits Vapor code, `@vitejs/plugin-vue-jsx` emits vnodes. Both
  * are unplugin/Vite plugins with include/exclude filters, so the plan can route
- * each file to one or the other.
+ * each file to exactly one of them.
+ *
+ * `isVapor` is evaluated per transform rather than captured, so the routing
+ * follows the current case without restarting the dev server.
  */
-export default function vuetifyJsxPlugins(vaporFiles: readonly string[]): Plugin[] {
-  const vapor = new Set(vaporFiles)
-  const isVapor = (id: string) => vapor.has(normalize(id))
-
+export default function vuetifyJsxPlugins(isVapor: (absoluteId: string) => boolean): Plugin[] {
   return [
-    jsxVapor({ include: [/\.[jt]sx$/], exclude: [(id: string) => !isVapor(id)] }) as Plugin,
-    vueJsx({ include: /\.[jt]sx$/, exclude: [(id: string) => isVapor(id)] }) as Plugin,
+    jsxVapor({
+      include: [/\.[jt]sx$/],
+      exclude: [(id: string) => !isVapor(id)],
+    }) as Plugin,
+    vueJsx({
+      include: /\.[jt]sx$/,
+      exclude: [(id: string) => isVapor(id)],
+    }) as Plugin,
   ]
-}
-
-function normalize(id: string): string {
-  return id.split('?')[0]!.replaceAll('\\', '/')
 }

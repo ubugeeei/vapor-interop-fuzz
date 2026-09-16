@@ -60,7 +60,16 @@ export interface SpecimenConfig {
    * It must default-export `{ install?(app): void }`.
    */
   readonly setupModule?: string
-  /** Extra Vite plugin factory module, relative to the workspace root. */
+  /**
+   * Extra Vite plugins, as a module path relative to the workspace root.
+   *
+   * It must default-export
+   * `(isVapor: (absoluteId: string) => boolean) => Plugin[]`. The predicate is
+   * *live*: it reads the plan for the case currently being rendered, so a
+   * plugin can route a file to one compiler or another without the server
+   * being restarted. That is how the component-level switch works for a
+   * JSX-authored target, which has no `vapor` block attribute to toggle.
+   */
   readonly vitePluginsModule?: string
 }
 

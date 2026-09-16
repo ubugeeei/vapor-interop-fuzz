@@ -7,10 +7,6 @@ on:
     - cron: '0 3 * * *'
   workflow_dispatch:
     inputs:
-      targets:
-        description: 'Space-separated target ids (default: every target enabled by default)'
-        required: false
-        type: string
       seed:
         description: 'Seed to replay a previous campaign exactly'
         required: false
@@ -38,8 +34,14 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install Vite+
-        run: curl -fsSL https://viteplus.dev/install.sh | bash
+      # `setup-vp` installs Vite+, the Node version from `.node-version` and
+      # the package manager, and caches the pnpm store.
+      - uses: voidzero-dev/setup-vp@v1.20.0
+        with:
+          node-version-file: .node-version
+          cache: true
+          # Installed explicitly below so CI fails on a stale lockfile.
+          run-install: false
 
       - name: Install dependencies
         run: vp install --frozen-lockfile
@@ -77,6 +79,16 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
+      - uses: voidzero-dev/setup-vp@v1.20.0
+        with:
+          node-version-file: .node-version
+          run-install: false
+
+      # The collector imports @vapor-fuzz/core, so this job needs the workspace
+      # installed even though it never opens a browser.
+      - name: Install dependencies
+        run: vp install --frozen-lockfile
+
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
@@ -84,8 +96,8 @@ jobs:
       - name: Collect new findings
         id: collect
         run: |
-          node --experimental-strip-types \
-            packages/runner/src/bin/collect-reports.ts artifacts > summary.md
+          # Node 26 strips types without a flag.
+          node packages/runner/src/bin/collect-reports.ts artifacts > summary.md
           if [ -s summary.md ]; then echo "found=true" >> "$GITHUB_OUTPUT"; fi
 
       - name: File an issue

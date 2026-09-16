@@ -8,7 +8,7 @@ import type { CaseObservation, DomSnapshot, FuzzPlan } from '@vapor-fuzz/core'
 import { chromium, type Browser, type BrowserContext, type Page } from 'playwright'
 import { registerCompilerTypeScript, vueCompiler } from './compiler-ts.ts'
 import type { SpecimenTargetPlan } from './discover.ts'
-import { FUZZ_DIR, fromId, WORKSPACE_ROOT } from './paths.ts'
+import { cleanModuleId, FUZZ_DIR, fromId, toId, WORKSPACE_ROOT } from './paths.ts'
 import {
   createFuzzState,
   ENTRY_ID,
@@ -177,7 +177,12 @@ export class SpecimenSession {
     })
     state.mutable = new Set(plan.mutable)
 
-    const extraPlugins = await loadExtraPlugins(plan)
+    // The predicate closes over `state`, which the runner mutates between
+    // cases -- so a JSX target's compiler routing follows the plan the same way
+    // the SFC rewrite does, with no dev-server restart.
+    const extraPlugins = await loadExtraPlugins(plan, (id) =>
+      state.vaporFiles.has(toId(cleanModuleId(id))),
+    )
     const rewriteAlias: AliasRewrite[] = Object.entries(plan.config.rewriteAlias ?? {}).map(
       ([prefix, dir]) => ({ prefix, dir: fromId(dir) }),
     )
@@ -483,10 +488,13 @@ export interface RunOutcome {
   readonly actions: readonly PageAction[]
 }
 
-async function loadExtraPlugins(plan: SpecimenTargetPlan): Promise<Plugin[]> {
+async function loadExtraPlugins(
+  plan: SpecimenTargetPlan,
+  isVapor: (absoluteId: string) => boolean,
+): Promise<Plugin[]> {
   if (!plan.config.vitePluginsModule) return []
   const mod = (await import(fromId(plan.config.vitePluginsModule))) as {
-    default?: (vaporFiles: readonly string[]) => Plugin[]
+    default?: (isVapor: (absoluteId: string) => boolean) => Plugin[]
   }
-  return mod.default?.([]) ?? []
+  return mod.default?.(isVapor) ?? []
 }
