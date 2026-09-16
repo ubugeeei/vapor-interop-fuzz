@@ -55,6 +55,9 @@ catalogs:
     'vuetify': '3.13.4'
     '@radix-ui/colors': '3.0.0'
     'vue-sonner': '2.0.9'
+    # Vuetify's docs examples use `<style lang="scss">`; without a preprocessor
+    # those specimens fail to transform and drop out of the corpus.
+    'sass-embedded': '1.104.1'
     # tsconfig presets that target repositories `extend`. Vite resolves a
     # tsconfig per source file, walking up from the file itself, so a target's
     # own tsconfig has to be loadable even though we never install that

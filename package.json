@@ -20,6 +20,7 @@
     "aria-hidden": "catalog:targets",
     "defu": "catalog:targets",
     "ohash": "catalog:targets",
+    "sass-embedded": "catalog:targets",
     "vue-sonner": "catalog:targets",
     "vuetify": "catalog:targets"
   },
