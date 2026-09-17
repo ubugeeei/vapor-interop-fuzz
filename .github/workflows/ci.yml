@@ -14,8 +14,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Job ids double as the required status check names on `main`, so keep them
+  # short and stable: renaming one silently drops the branch protection rule.
   check:
-    name: check + unit tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -45,7 +46,6 @@ jobs:
         run: vp run targets:licenses
 
   smoke:
-    name: fuzz the in-repo target (fixed seed)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
