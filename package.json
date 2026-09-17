@@ -37,6 +37,6 @@
   "engines": {
     "node": ">=26.0.0"
   },
-  "packageManager": "pnpm@11.25.0",
+  "packageManager": "pnpm@12.4.2",
   "//dependencies": "Runtime deps of the submodule specimens. They live at the workspace root so that files under targets/** can resolve them by walking up to <root>/node_modules -- see pnpm-workspace.yaml."
 }
