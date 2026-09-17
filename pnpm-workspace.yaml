@@ -65,6 +65,17 @@ catalogs:
     '@vue/tsconfig': '0.9.1'
     '@tsconfig/node24': '24.0.5'
 
+# pnpm refuses to install when a dependency's build script is neither approved
+# nor explicitly ignored, so both have to be decided here rather than left to an
+# interactive prompt that CI can never answer.
+allowBuilds:
+  # Rewrites its own dist to target Vue 2 or Vue 3. Pulled in by
+  # `@floating-ui/vue`, which Reka UI uses for positioning.
+  'vue-demi': true
+  # A native file watcher that Sass only needs for `--watch`. The fuzzer
+  # compiles once per case and never watches, so skip the native build.
+  '@parcel/watcher': false
+
 dedupePeers: true
 
 ignoreWorkspaceRootCheck: true
